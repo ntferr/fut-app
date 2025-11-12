@@ -1,0 +1,279 @@
+{
+  "credentials": [
+    {
+      "user": "admin",
+      "password": "admin123"
+    },
+    {
+      "user": "organizador",
+      "password": "org123"
+    },
+    {
+      "user": "usuario",
+      "password": "user123"
+    }
+  ],
+  
+  "teams": [
+    {
+      "id": 1,
+      "name": "Flamengo",
+      "stadium": "Maracanã"
+    },
+    {
+      "id": 2,
+      "name": "Palmeiras",
+      "stadium": "Allianz Parque"
+    },
+    {
+      "id": 3,
+      "name": "São Paulo",
+      "stadium": "Morumbi"
+    },
+    {
+      "id": 4,
+      "name": "Corinthians",
+      "stadium": "Neo Química Arena"
+    },
+    {
+      "id": 5,
+      "name": "Grêmio",
+      "stadium": "Arena do Grêmio"
+    },
+    {
+      "id": 6,
+      "name": "Internacional",
+      "stadium": "Beira-Rio"
+    },
+    {
+      "id": 7,
+      "name": "Santos",
+      "stadium": "Vila Belmiro"
+    },
+    {
+      "id": 8,
+      "name": "Cruzeiro",
+      "stadium": "Mineirão"
+    }
+  ],
+  
+  "championship": [
+    {
+      "id": 1,
+      "name": "Campeonato Brasileiro Série A 2024",
+      "round": 10
+    },
+    {
+      "id": 2,
+      "name": "Copa do Brasil 2024",
+      "round": 4
+    },
+    {
+      "id": 3,
+      "name": "Campeonato Carioca 2024",
+      "round": 8
+    },
+    {
+      "id": 4,
+      "name": "Campeonato Paulista 2024",
+      "round": 12
+    }
+  ],
+  
+  "championship_teams": [
+    {
+      "championship_id": 1,
+      "team_id": 1
+    },
+    {
+      "championship_id": 1,
+      "team_id": 2
+    },
+    {
+      "championship_id": 1,
+      "team_id": 3
+    },
+    {
+      "championship_id": 1,
+      "team_id": 4
+    },
+    {
+      "championship_id": 1,
+      "team_id": 5
+    },
+    {
+      "championship_id": 1,
+      "team_id": 6
+    },
+    {
+      "championship_id": 1,
+      "team_id": 7
+    },
+    {
+      "championship_id": 1,
+      "team_id": 8
+    },
+    {
+      "championship_id": 2,
+      "team_id": 1
+    },
+    {
+      "championship_id": 2,
+      "team_id": 2
+    },
+    {
+      "championship_id": 2,
+      "team_id": 3
+    },
+    {
+      "championship_id": 2,
+      "team_id": 4
+    },
+    {
+      "championship_id": 3,
+      "team_id": 1
+    },
+    {
+      "championship_id": 3,
+      "team_id": 7
+    },
+    {
+      "championship_id": 4,
+      "team_id": 2
+    },
+    {
+      "championship_id": 4,
+      "team_id": 3
+    },
+    {
+      "championship_id": 4,
+      "team_id": 4
+    }
+  ],
+  
+  "matches": [
+    {
+      "id": 1,
+      "headquarters": "Maracanã",
+      "championship_id": 1
+    },
+    {
+      "id": 2,
+      "headquarters": "Allianz Parque",
+      "championship_id": 1
+    },
+    {
+      "id": 3,
+      "headquarters": "Morumbi",
+      "championship_id": 1
+    },
+    {
+      "id": 4,
+      "headquarters": "Neo Química Arena",
+      "championship_id": 1
+    },
+    {
+      "id": 5,
+      "headquarters": "Maracanã",
+      "championship_id": 2
+    },
+    {
+      "id": 6,
+      "headquarters": "Allianz Parque",
+      "championship_id": 2
+    },
+    {
+      "id": 7,
+      "headquarters": "Maracanã",
+      "championship_id": 3
+    },
+    {
+      "id": 8,
+      "headquarters": "Morumbi",
+      "championship_id": 4
+    }
+  ],
+  
+  "match_teams": [
+    {
+      "match_id": 1,
+      "team_id": 1,
+      "is_home_team": true
+    },
+    {
+      "match_id": 1,
+      "team_id": 2,
+      "is_home_team": false
+    },
+    {
+      "match_id": 2,
+      "team_id": 2,
+      "is_home_team": true
+    },
+    {
+      "match_id": 2,
+      "team_id": 3,
+      "is_home_team": false
+    },
+    {
+      "match_id": 3,
+      "team_id": 3,
+      "is_home_team": true
+    },
+    {
+      "match_id": 3,
+      "team_id": 4,
+      "is_home_team": false
+    },
+    {
+      "match_id": 4,
+      "team_id": 4,
+      "is_home_team": true
+    },
+    {
+      "match_id": 4,
+      "team_id": 5,
+      "is_home_team": false
+    },
+    {
+      "match_id": 5,
+      "team_id": 1,
+      "is_home_team": true
+    },
+    {
+      "match_id": 5,
+      "team_id": 3,
+      "is_home_team": false
+    },
+    {
+      "match_id": 6,
+      "team_id": 2,
+      "is_home_team": true
+    },
+    {
+      "match_id": 6,
+      "team_id": 4,
+      "is_home_team": false
+    },
+    {
+      "match_id": 7,
+      "team_id": 1,
+      "is_home_team": true
+    },
+    {
+      "match_id": 7,
+      "team_id": 7,
+      "is_home_team": false
+    },
+    {
+      "match_id": 8,
+      "team_id": 3,
+      "is_home_team": true
+    },
+    {
+      "match_id": 8,
+      "team_id": 2,
+      "is_home_team": false
+    }
+  ]
+}

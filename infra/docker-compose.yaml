@@ -10,14 +10,9 @@ services:
     volumes:
       - ./data:/var/lib/postgresql/data
     environment:
-      POSTGRES_DB: fut-app
+      POSTGRES_DB: futapp
       POSTGRES_USER: postgres
-      POSTFRES_PASSWORD: 123456
-    healthcheck:
-      test: ["CMD", "pg_isready", "-U", "fut-app", "-d", "fut-app"]
-      interval: 1m30s
-      retries: 5
-      start_period: 30s
+      POSTGRES_PASSWORD: 123456
     ports:
       - "5432:5432"
     
@@ -26,7 +21,7 @@ services:
       - fut-app
     image: "taivokasper/omnidb"
     ports:
-      - "8090:8081"
+      - "8090:8080"
 
   app:
     build:

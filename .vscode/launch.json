@@ -1,0 +1,21 @@
+{
+    "version": "0.3.0",
+    "configurations": [
+        {
+            "name": "Main App",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "${workspaceFolder}/cmd/app-fut/main.go",
+            "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "name": "Migrations",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "${workspaceFolder}/migrate/main.go",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+    }

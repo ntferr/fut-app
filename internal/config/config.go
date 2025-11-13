@@ -5,8 +5,10 @@ import (
 )
 
 type Config struct {
-	App      AppConfig
-	Postgres PostgresConfig
+	App         AppConfig
+	Postgres    PostgresConfig
+	JWT         JWT
+	FootballAPP FootballAPP
 }
 
 type AppConfig struct {
@@ -21,6 +23,14 @@ type PostgresConfig struct {
 	User     string `env:"PG_USER,required"`
 	Password string `env:"PG_PASSWORD,required"`
 	Name     string `env:"PG_NAME,required"`
+}
+
+type JWT struct {
+	SecretKey string `env:"JWT_SECRET_KEY,required"`
+}
+
+type FootballAPP struct {
+	URL string `env:"FOOTBALL_APP_BASE_URL,required"`
 }
 
 func NewConfig() (*Config, error) {

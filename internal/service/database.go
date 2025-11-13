@@ -8,6 +8,11 @@ import (
 	"gorm.io/gorm"
 )
 
+var (
+	ErrUserNotFound    = errors.New("invalid credentials")
+	ErrInvalidPassword = errors.New("invalid credentials")
+)
+
 type Database struct {
 	Gorm *gorm.DB
 }
@@ -19,19 +24,22 @@ func NewDatabase(gorm *gorm.DB) Database {
 }
 
 type AuthenticationRepository interface {
-	FindCredentials(ctx context.Context, credentials model.AuthRequest) error
+	FindCredentials(ctx context.Context, credentials model.AuthRequest) (*model.AuthRequest, error)
 }
 
-func (d *Database) FindCredentials(ctx context.Context, credentials model.AuthRequest) error {
-	var dbCredentials model.AuthRequest
-	result := d.Gorm.Where("user", dbCredentials).First(&dbCredentials)
+func (d *Database) FindCredentials(ctx context.Context, credentials model.AuthRequest) (*model.AuthRequest, error) {
+	var storedAuth model.AuthRequest
+	result := d.Gorm.
+		WithContext(ctx).
+		Where("user", storedAuth).
+		First(&storedAuth)
 	if result.Error != nil {
-		return errors.New("user not found")
+		return nil, ErrUserNotFound
 	}
 
-	if !dbCredentials.CheckPassword(credentials.Password) {
-		return errors.New("incorrect password")
+	if !storedAuth.CheckPassword(credentials.Password) {
+		return nil, ErrInvalidPassword
 	}
 
-	return nil
+	return &storedAuth, nil
 }

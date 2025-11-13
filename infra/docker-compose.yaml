@@ -26,7 +26,7 @@ services:
       - fut-app
     image: "taivokasper/omnidb"
     ports:
-      - "8090:8090"
+      - "8090:8081"
 
   app:
     build:

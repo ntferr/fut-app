@@ -1,11 +1,13 @@
 package controller
 
 type Controller struct {
-	Auth Auth
+	Auth     Auth
+	Champion Champion
 }
 
-func NewController(auth Auth) *Controller {
+func NewController(auth Auth, champion Champion) *Controller {
 	return &Controller{
-		Auth: auth,
+		Auth:     auth,
+		Champion: champion,
 	}
 }

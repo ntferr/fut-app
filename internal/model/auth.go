@@ -4,10 +4,12 @@ import (
 	"errors"
 	"log"
 
+	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type AuthRequest struct {
+	ID       int    `json:"id"`
 	User     string `json:"user"`
 	Password string `json:"password"`
 }
@@ -34,4 +36,9 @@ func (a *AuthRequest) HashPassword() error {
 
 func (a *AuthRequest) CheckPassword(password string) bool {
 	return a.Password == password
+}
+
+type CustomClaims struct {
+	AuthRequest
+	jwt.RegisteredClaims
 }

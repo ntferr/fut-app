@@ -2,47 +2,10 @@
 
 ## Descrição
 
-## DER
+## OminiDB - SQL Client
 
-```mermaid
-erDiagram
-    CREDENTIALS {
-        varchar user PK
-        varchar password
-    }
-    
-    TEAMS {
-        serial id PK
-        varchar name
-        varchar stadium
-    }
-    
-    CHAMPIONSHIP {
-        serial id PK
-        varchar name
-        int round
-    }
-    
-    MATCHES {
-        serial id PK
-        varchar headquarters
-        int championship_id FK
-    }
-    
-    CHAMPIONSHIP_TEAMS {
-        int championship_id FK
-        int team_id FK
-    }
-    
-    MATCH_TEAMS {
-        int match_id FK
-        int team_id FK
-        boolean is_home_team
-    }
+### Credentials
 
-    CHAMPIONSHIP ||--o{ MATCHES : has
-    CHAMPIONSHIP ||--o{ CHAMPIONSHIP_TEAMS : contains
-    TEAMS }o--|| CHAMPIONSHIP_TEAMS : participates
-    MATCHES ||--o{ MATCH_TEAMS : involves
-    TEAMS }o--|| MATCH_TEAMS : plays_in
-```
+> [!NOTE]
+> - User: admin
+> - Password: admin

@@ -62,10 +62,12 @@ func main() {
 	dialector := postgres.NewPostgres(cfg.Postgres)
 	db := gorm.NewGorm(dialector)
 	authService := service.NewDatabase(db)
-	authController := controller.NewAuth(authService)
-	control := controller.NewController(authController)
+	authController := controller.NewAuth(authService, cfg.JWT.SecretKey)
+	footballService := service.NewFootball(cfg.FootballAPP.URL)
+	footbalController := controller.NewChampion(footballService)
+	control := controller.NewController(authController, footbalController)
 
-	router.Setup(app, control)
+	router.Setup(app, control, cfg.JWT.SecretKey)
 
 	err = app.Start(
 		addressFormater(

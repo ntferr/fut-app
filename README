@@ -1,6 +1,17 @@
-# fut-app
+# Fut App
 
 ## Descrição
+
+Aplicação que comunica-se e gerencia os dados da API em que é comunicado(football-data.org). Funciona como gerenciador de autenticação limitando a visualização por endpoint.
+
+### Frameworks
+> - Echo: HTTP Handler
+> - Gorm: ORM for Database
+> - Postgres: Database
+> - Netflix/Go env: Load app environments
+> - Golang JWT: Json Web Token encryption
+
+### Architecture
 
 ## OminiDB - SQL Client
 

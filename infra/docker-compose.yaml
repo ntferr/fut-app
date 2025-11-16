@@ -23,24 +23,24 @@ services:
     ports:
       - "8090:8080"
 
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    networks:
-      - fut-app
-    environment:
-      APP_HOST: "0.0.0.0"
-      APP_PORT: "8080"
-      APP_NAME: "fut-app"
-      PG_HOST: "postgres"
-      PG_PORT: "5432"
-      PG_USER: "postgres"
-      PG_PASSWORD: "123456"
-      PG_NAME: "fut-app"
-    ports:
-      - "8080:8080"
-    depends_on:
-      postgres:
-        condition: service_healthy
-    restart: unless-stopped
+  # app:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   networks:
+  #     - fut-app
+  #   environment:
+  #     APP_HOST: "0.0.0.0"
+  #     APP_PORT: "8080"
+  #     APP_NAME: "fut-app"
+  #     PG_HOST: "postgres"
+  #     PG_PORT: "5432"
+  #     PG_USER: "postgres"
+  #     PG_PASSWORD: "123456"
+  #     PG_NAME: "fut-app"
+  #   ports:
+  #     - "8080:8080"
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #   restart: unless-stopped

@@ -8,8 +8,8 @@ import (
 
 func Setup(app *echo.Echo, control *controller.Controller, secretKey string) {
 	app.POST("auth/login", control.Auth.Authenticate)
+	app.POST("auth/create", control.Auth.CreateCredentials)
 
-	protected := app.Group("")
-	protected.Use(middleware.JWTMiddleware(secretKey))
-	protected.GET("/campeonatos", control.Champion.Championship)
+	protected := app.Group("/campeonatos", middleware.JWTMiddleware(secretKey))
+	protected.GET("/", control.Champion.Championship)
 }

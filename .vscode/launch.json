@@ -2,7 +2,7 @@
     "version": "0.3.0",
     "configurations": [
         {
-            "name": "Main App",
+            "name": "fut-app",
             "type": "go",
             "request": "launch",
             "mode": "debug",
@@ -10,11 +10,11 @@
             "envFile": "${workspaceFolder}/.env"
         },
         {
-            "name": "Migrations",
+            "name": "migrator",
             "type": "go",
             "request": "launch",
             "mode": "debug",
-            "program": "${workspaceFolder}/migrate/main.go",
+            "program": "${workspaceFolder}/cmd/migrator/main.go",
             "envFile": "${workspaceFolder}/.env"
         }
     ]

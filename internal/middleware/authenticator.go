@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -14,12 +15,11 @@ const (
 )
 
 func VerifyToken(tokenValue string, secretKey string) (jwt.MapClaims, error) {
-	token, err := jwt.Parse(RemoveBearerPrefix(tokenValue), func(token *jwt.Token) (any, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); ok {
-			return []byte(secretKey), nil
+	token, err := jwt.Parse(tokenValue, func(token *jwt.Token) (any, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("método de assinatura inesperado: %v", token.Header["alg"])
 		}
-		// BadRequest token enviado está correto
-		return nil, errors.New("invalid token")
+		return []byte(secretKey), nil
 	})
 	if err != nil {
 		// Unuathorized token não está válido
@@ -34,11 +34,13 @@ func VerifyToken(tokenValue string, secretKey string) (jwt.MapClaims, error) {
 	return claims, nil
 }
 
-func RemoveBearerPrefix(token string) string {
-	if strings.HasPrefix(token, BearerPrefix+" ") {
-		token = strings.Trim(BearerPrefix, token)
+func RemoveBearerPrefix(authHeader string) (string, error) {
+	parts := strings.Split(authHeader, " ")
+	if len(parts) != 2 || parts[0] != "Bearer" {
+		return "", errors.New("failed to split bearer from auth header")
 	}
-	return token
+	tokenString := parts[1]
+	return tokenString, nil
 }
 
 func JWTMiddleware(secretKey string) echo.MiddlewareFunc {
@@ -46,12 +48,17 @@ func JWTMiddleware(secretKey string) echo.MiddlewareFunc {
 		return func(c echo.Context) error {
 
 			authHeader := c.Request().Header.Get("Authorization")
-			claims, err := VerifyToken(authHeader, secretKey)
+			token, err := RemoveBearerPrefix(authHeader)
+			if err != nil {
+				return echo.NewHTTPError(http.StatusUnauthorized, err)
+			}
+
+			claims, err := VerifyToken(token, secretKey)
 			if err != nil {
 				return echo.NewHTTPError(http.StatusUnauthorized, "Token inválido")
 			}
 
-			user, ok := claims["user"].(string)
+			user, ok := claims["username"].(string)
 			if !ok {
 				return echo.NewHTTPError(http.StatusUnauthorized, "Token inválido")
 			}
@@ -61,7 +68,5 @@ func JWTMiddleware(secretKey string) echo.MiddlewareFunc {
 			c.Set("claims", claims)
 			return next(c)
 		}
-
-		// return echo.NewHTTPError(http.StatusUnauthorized, "Token inválido")
 	}
 }

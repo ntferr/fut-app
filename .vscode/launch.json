@@ -6,7 +6,7 @@
             "type": "go",
             "request": "launch",
             "mode": "debug",
-            "program": "${workspaceFolder}/cmd/app-fut/main.go",
+            "program": "${workspaceFolder}/cmd/fut-app/main.go",
             "envFile": "${workspaceFolder}/.env"
         },
         {

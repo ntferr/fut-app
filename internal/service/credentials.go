@@ -33,7 +33,7 @@ func (d *CredentialsDatabase) FindCredentials(ctx context.Context, credentials m
 	var storedCredentias model.AuthRequest
 	result := d.Gorm.
 		WithContext(ctx).
-		Where("user", storedCredentias).
+		Where("user", credentials.User).
 		First(&storedCredentias)
 	if result.Error != nil {
 		return nil, ErrUserNotFound

@@ -15,6 +15,12 @@ type AuthRequest struct {
 	UpdatedAt time.Time `gorm:"updatedAt"`
 }
 
+type AuthClaims struct {
+	UserID   int    `json:"user_id"`
+	Username string `json:"username"`
+	jwt.RegisteredClaims
+}
+
 func (a *AuthRequest) Validate() error {
 	if a.User == "" {
 		return errors.New("user is required")
@@ -26,14 +32,19 @@ func (a *AuthRequest) Validate() error {
 }
 
 func (a *AuthRequest) GenerateToken(secretKey string) (string, error) {
-	claims := jwt.MapClaims{
-		"id":   a.ID,
-		"user": a.User,
-		"exp":  time.Now().Add(time.Hour * 1).Unix(),
+	now := time.Now()
+	claims := AuthClaims{
+		UserID:   a.ID,
+		Username: a.User,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(now.Add(time.Hour * 1)),
+			IssuedAt:  jwt.NewNumericDate(now),
+			Subject:   a.User,
+			ID:        string(rune(a.ID)), // Convertendo ID para string
+		},
 	}
-
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenSttring, err := token.SignedString(secretKey)
+	tokenSttring, err := token.SignedString([]byte(secretKey))
 	if err != nil {
 		return "", errors.New("failed to generate token")
 	}

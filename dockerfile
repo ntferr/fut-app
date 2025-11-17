@@ -20,6 +20,6 @@ WORKDIR /root/
 
 COPY --from=builder /app/fut-app .
 
-EXPOSE 8080
+EXPOSE 8000
 
 CMD ["./fut-app"]

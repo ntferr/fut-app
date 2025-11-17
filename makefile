@@ -1,3 +1,5 @@
+up-app:
+	docker-compose -f infra/docker-compose.yaml build --no-cache app
 
 up-database:
 	docker-compose -f infra/docker-compose.yaml up -d postgres omnidb

@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
-	"golang.org/x/crypto/bcrypt"
 )
 
 func TestAuth(t *testing.T) {
@@ -68,20 +67,4 @@ func TestAuth(t *testing.T) {
 			is.Equal(test.expectedErr, nil)
 		})
 	}
-}
-
-func TestAuthHash(t *testing.T) {
-	t.Parallel()
-	is := require.New(t)
-	t.Run("validate hash", func(t *testing.T) {
-		auth := AuthRequest{
-			User:     "xpto",
-			Password: "123456",
-		}
-
-		err := auth.HashPassword()
-		is.Nil(err)
-		err = bcrypt.CompareHashAndPassword([]byte(auth.EncryptedPassword), []byte(auth.Password))
-		is.Nil(err)
-	})
 }

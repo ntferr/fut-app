@@ -2,20 +2,17 @@ package model
 
 import (
 	"errors"
-	"log"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"golang.org/x/crypto/bcrypt"
 )
 
 type AuthRequest struct {
-	ID                int       `json:"id" gorm:"primaryKey"`
-	User              string    `json:"user" gorm:"user"`
-	Password          string    `json:"password" gorm:"-"`
-	EncryptedPassword string    `gorm:"type:text;not null"`
-	CreatedAt         time.Time `gorm:"createdAt"`
-	UpdatedAt         time.Time `gorm:"updatedAt"`
+	ID        int       `json:"id" gorm:"primaryKey"`
+	User      string    `json:"user" gorm:"user"`
+	Password  string    `json:"password" gorm:"password"`
+	CreatedAt time.Time `gorm:"createdAt"`
+	UpdatedAt time.Time `gorm:"updatedAt"`
 }
 
 func (a *AuthRequest) Validate() error {
@@ -25,16 +22,6 @@ func (a *AuthRequest) Validate() error {
 	if a.Password == "" {
 		return errors.New("password is required")
 	}
-	return nil
-}
-
-func (a *AuthRequest) HashPassword() error {
-	hash, err := bcrypt.GenerateFromPassword([]byte(a.Password), bcrypt.DefaultCost)
-	if err != nil {
-		log.Println("failed to hash password: ", err)
-		return err
-	}
-	a.EncryptedPassword = string(hash)
 	return nil
 }
 

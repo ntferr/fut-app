@@ -40,14 +40,7 @@ func (a Auth) Authenticate(c echo.Context) error {
 			err,
 		)
 	}
-	if err := req.HashPassword(); err != nil {
-		return c.JSON(
-			http.StatusBadRequest,
-			map[string]string{
-				"error": "somenthing went wrong with given password",
-			},
-		)
-	}
+
 	storedAuth, err := a.Service.FindCredentials(c.Request().Context(), req)
 	if err != nil {
 		log.Println("failed to find credentials\n", err)
@@ -90,14 +83,6 @@ func (a Auth) CreateCredentials(c echo.Context) error {
 		return c.JSON(
 			http.StatusBadRequest,
 			err,
-		)
-	}
-	if err := req.HashPassword(); err != nil {
-		return c.JSON(
-			http.StatusBadRequest,
-			map[string]string{
-				"error": "somenthing went wrong with given password",
-			},
 		)
 	}
 

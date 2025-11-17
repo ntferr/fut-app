@@ -10,7 +10,7 @@ RUN go mod download
 
 COPY . .
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o cmd/fut-app/main.go
+RUN CGO_ENABLED=0 GOOS=linux go build -o fut-app ./cmd/fut-app
 
 FROM alpine:latest
 

@@ -3,198 +3,147 @@
 package middleware
 
 import (
-	"net/http"
-	"net/http/httptest"
+	"crypto/rand"
+	"crypto/rsa"
 	"testing"
-	"time"
 
 	"github.com/fut-app/internal/model"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/labstack/echo/v4"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func TestJWTMiddleware(t *testing.T) {
-	secretKey := "test-secret-key"
-	middleware := JWTMiddleware(secretKey)
-
+func TestRemoveBearerPrefix(t *testing.T) {
+	t.Parallel()
+	is := require.New(t)
 	tests := []struct {
-		name           string
-		setupRequest   func() *http.Request
-		expectedStatus int
-		expectedBody   string
+		name          string
+		authHeader    string
+		hasError      bool
+		expectedToken string
+		expectedErr   error
 	}{
 		{
-			name: "should return unauthorized when no authorization header",
-			setupRequest: func() *http.Request {
-				req := httptest.NewRequest("GET", "/", nil)
-				return req
-			},
-			expectedStatus: http.StatusUnauthorized,
-			expectedBody:   "Token de autorização necessário",
+			name:          "when token is valid, should return token without bearer prefix",
+			authHeader:    "Bearer xpto",
+			hasError:      false,
+			expectedToken: "xpto",
+			expectedErr:   nil,
 		},
 		{
-			name: "should return unauthorized when invalid bearer format",
-			setupRequest: func() *http.Request {
-				req := httptest.NewRequest("GET", "/", nil)
-				req.Header.Set("Authorization", "InvalidToken")
-				return req
-			},
-			expectedStatus: http.StatusUnauthorized,
-			expectedBody:   "Formato de token inválido. Use: Bearer <token>",
+			name:        "when token is empty, should return error",
+			authHeader:  "",
+			hasError:    true,
+			expectedErr: NewJWTErr(nil, "failed to split bearer from auth header"),
 		},
 		{
-			name: "should return unauthorized when token is expired",
-			setupRequest: func() *http.Request {
-				token := jwt.NewWithClaims(jwt.SigningMethodHS256, &model.CustomClaims{
-					AuthRequest: model.AuthRequest{
-						User: "test-user",
-					},
-					RegisteredClaims: jwt.RegisteredClaims{
-						ExpiresAt: jwt.NewNumericDate(time.Now().Add(-1 * time.Hour)), // Token expirado
-					},
-				})
-				tokenString, _ := token.SignedString([]byte(secretKey))
-
-				req := httptest.NewRequest("GET", "/", nil)
-				req.Header.Set("Authorization", "Bearer "+tokenString)
-				return req
-			},
-			expectedStatus: http.StatusUnauthorized,
-			expectedBody:   "Token expirado",
+			name:        "when token has more than two parts, should return error",
+			authHeader:  "Bearer translate programming",
+			hasError:    true,
+			expectedErr: NewJWTErr(nil, "failed to split bearer from auth header"),
 		},
 		{
-			name: "should return unauthorized when invalid token signature",
-			setupRequest: func() *http.Request {
-				// Token assinado com chave diferente
-				token := jwt.NewWithClaims(jwt.SigningMethodHS256, &model.CustomClaims{
-					AuthRequest: model.AuthRequest{
-						User: "test-user",
-					},
-				})
-				tokenString, _ := token.SignedString([]byte("wrong-secret-key"))
-
-				req := httptest.NewRequest("GET", "/", nil)
-				req.Header.Set("Authorization", "Bearer "+tokenString)
-				return req
-			},
-			expectedStatus: http.StatusUnauthorized,
-			expectedBody:   "Token inválido",
-		},
-		{
-			name: "should successfully authenticate with valid token",
-			setupRequest: func() *http.Request {
-				token := jwt.NewWithClaims(jwt.SigningMethodHS256, &model.CustomClaims{
-					AuthRequest: model.AuthRequest{
-						User:     "test-user",
-						Password: "test-pass",
-					},
-					RegisteredClaims: jwt.RegisteredClaims{
-						ExpiresAt: jwt.NewNumericDate(time.Now().Add(1 * time.Hour)),
-					},
-				})
-				tokenString, _ := token.SignedString([]byte(secretKey))
-
-				req := httptest.NewRequest("GET", "/", nil)
-				req.Header.Set("Authorization", "Bearer "+tokenString)
-				return req
-			},
-			expectedStatus: http.StatusOK,
-			expectedBody:   "success",
+			name:        "when token doesn't have bearer prefix, should return error",
+			authHeader:  "xpto",
+			hasError:    true,
+			expectedErr: NewJWTErr(nil, "failed to split bearer from auth header"),
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			e := echo.New()
-			req := tt.setupRequest()
-			rec := httptest.NewRecorder()
-			c := e.NewContext(req, rec)
-
-			// Handler mock que será chamado se o middleware passar
-			mockHandler := func(c echo.Context) error {
-				return c.String(http.StatusOK, "success")
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			token, err := RemoveBearerPrefix(test.authHeader)
+			if test.hasError {
+				is.Equal(test.expectedErr, err)
+				return
 			}
-
-			// Executar o middleware
-			handler := middleware(mockHandler)
-			err := handler(c)
-
-			if tt.expectedStatus != http.StatusOK {
-				require.Error(t, err)
-				httpErr, ok := err.(*echo.HTTPError)
-				require.True(t, ok, "Error should be of type *echo.HTTPError")
-				assert.Equal(t, tt.expectedStatus, httpErr.Code)
-				assert.Contains(t, httpErr.Message, tt.expectedBody)
-			} else {
-				require.NoError(t, err)
-				assert.Equal(t, tt.expectedStatus, rec.Code)
-				assert.Equal(t, tt.expectedBody, rec.Body.String())
-
-				// Verificar se os dados do usuário foram setados no contexto
-				user := c.Get("user")
-				assert.NotNil(t, user)
-
-				claims := c.Get("claims")
-				assert.NotNil(t, claims)
-			}
+			is.Nil(test.expectedErr)
+			is.Equal(test.expectedToken, token)
 		})
 	}
 }
 
-func TestJWTMiddleware_InvalidSigningMethod(t *testing.T) {
-	secretKey := "test-secret-key"
-	middleware := JWTMiddleware(secretKey)
+func TestVerifyToken(t *testing.T) {
+	t.Parallel()
+	is := require.New(t)
 
-	// Token com método de assinatura inválido (RS256 em vez de HS256)
-	token := jwt.NewWithClaims(jwt.SigningMethodRS256, &model.CustomClaims{
-		AuthRequest: model.AuthRequest{
-			User: "test-user",
-		},
+	aReq := model.AuthRequest{
+		ID:       2,
+		User:     "test",
+		Password: "abcd",
+	}
+	tokenString, err := aReq.GenerateToken("xpto")
+	is.Nil(err)
+
+	rsaToken := jwt.NewWithClaims(jwt.SigningMethodRS256, jwt.MapClaims{
+		"username": "testuser",
 	})
+	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
+	is.Nil(err)
+	strRSA, err := rsaToken.SignedString(privateKey)
+	is.Nil(err)
 
-	req := httptest.NewRequest("GET", "/", nil)
-	req.Header.Set("Authorization", "Bearer "+token.Raw) // Raw token não assinado
-
-	rec := httptest.NewRecorder()
-	e := echo.New()
-	c := e.NewContext(req, rec)
-
-	mockHandler := func(c echo.Context) error {
-		return c.String(http.StatusOK, "success")
+	tests := []struct {
+		name           string
+		token          string
+		secretKey      string
+		hasErr         bool
+		ExpectedErr    error
+		ExpectedClaims jwt.MapClaims
+	}{
+		{
+			name:        "when token and secret key is valid, should return jwt.MapClaims",
+			token:       tokenString,
+			secretKey:   "xpto",
+			hasErr:      false,
+			ExpectedErr: nil,
+			ExpectedClaims: jwt.MapClaims{
+				"user_id":  float64(2),
+				"username": "test",
+			},
+		},
+		{
+			name:        "when token is empty, should return error",
+			token:       "",
+			secretKey:   "xpto",
+			hasErr:      true,
+			ExpectedErr: NewJWTErr(err, "this token isn't valid"),
+		},
+		{
+			name:        "when secret key is empty, should return error",
+			token:       tokenString,
+			secretKey:   strRSA,
+			hasErr:      true,
+			ExpectedErr: NewJWTErr(err, "this token isn't valid"),
+		},
+		{
+			name:        "when it's not a token, should return error",
+			token:       strRSA,
+			secretKey:   "xpto",
+			hasErr:      true,
+			ExpectedErr: NewJWTErr(nil, "this isn't a jwt token"),
+		},
+		{
+			name:        "when secret is wrong, should return error",
+			token:       tokenString,
+			secretKey:   "test",
+			hasErr:      true,
+			ExpectedErr: NewJWTErr(err, "this token isn't valid"),
+		},
 	}
 
-	handler := middleware(mockHandler)
-	err := handler(c)
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			claims, err := VerifyToken(test.token, test.secretKey)
 
-	require.Error(t, err)
-	httpErr := err.(*echo.HTTPError)
-	assert.Equal(t, http.StatusUnauthorized, httpErr.Code)
-	assert.Contains(t, httpErr.Message, "Método de assinatura inválido")
-}
-
-func TestJWTMiddleware_InvalidTokenStructure(t *testing.T) {
-	secretKey := "test-secret-key"
-	middleware := JWTMiddleware(secretKey)
-
-	// Token inválido
-	req := httptest.NewRequest("GET", "/", nil)
-	req.Header.Set("Authorization", "Bearer invalid-token-string")
-
-	rec := httptest.NewRecorder()
-	e := echo.New()
-	c := e.NewContext(req, rec)
-
-	mockHandler := func(c echo.Context) error {
-		return c.String(http.StatusOK, "success")
+			if test.hasErr {
+				is.Equal(test.ExpectedErr.Error(), err.Error())
+				return
+			}
+			is.Nil(err)
+			is.Equal(test.ExpectedClaims["username"], claims["username"])
+			is.Equal(test.ExpectedClaims["user_id"], claims["user_id"])
+			is.NotNil(claims["exp"])
+		})
 	}
-
-	handler := middleware(mockHandler)
-	err := handler(c)
-
-	require.Error(t, err)
-	httpErr := err.(*echo.HTTPError)
-	assert.Equal(t, http.StatusUnauthorized, httpErr.Code)
-	assert.Contains(t, httpErr.Message, "Token inválido")
 }

@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -17,13 +16,14 @@ const (
 func VerifyToken(tokenValue string, secretKey string) (jwt.MapClaims, error) {
 	token, err := jwt.Parse(tokenValue, func(token *jwt.Token) (any, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("método de assinatura inesperado: %v", token.Header["alg"])
+			// BadRequest
+			return nil, NewJWTErr(nil, "this isn't a jwt token")
 		}
 		return []byte(secretKey), nil
 	})
 	if err != nil {
-		// Unuathorized token não está válido
-		return nil, errors.New("invalid token")
+		// Unuathorized
+		return nil, NewJWTErr(err, "this token isn't valid")
 	}
 
 	claims, ok := token.Claims.(jwt.MapClaims)
@@ -37,7 +37,7 @@ func VerifyToken(tokenValue string, secretKey string) (jwt.MapClaims, error) {
 func RemoveBearerPrefix(authHeader string) (string, error) {
 	parts := strings.Split(authHeader, " ")
 	if len(parts) != 2 || parts[0] != "Bearer" {
-		return "", errors.New("failed to split bearer from auth header")
+		return "", NewJWTErr(nil, "failed to split bearer from auth header")
 	}
 	tokenString := parts[1]
 	return tokenString, nil
@@ -63,9 +63,7 @@ func JWTMiddleware(secretKey string) echo.MiddlewareFunc {
 				return echo.NewHTTPError(http.StatusUnauthorized, "Token inválido")
 			}
 
-			// Adicionar as claims ao contexto para uso posterior
 			c.Set("user", user)
-			c.Set("claims", claims)
 			return next(c)
 		}
 	}

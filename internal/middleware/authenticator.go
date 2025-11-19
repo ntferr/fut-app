@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"errors"
 	"net/http"
 	"strings"
 
@@ -11,24 +10,28 @@ import (
 
 const (
 	BearerPrefix = "Bearer"
+	MethodHS256  = "HS256"
 )
 
 func VerifyToken(tokenValue string, secretKey string) (jwt.MapClaims, error) {
 	token, err := jwt.Parse(tokenValue, func(token *jwt.Token) (any, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			// BadRequest
-			return nil, NewJWTErr(nil, "this isn't a jwt token")
+		switch token.Method.Alg() {
+		case MethodHS256:
+			return []byte(secretKey), nil
+		default:
+			return nil, NewJWTErr(nil, "token must be signed with HMAC method")
 		}
-		return []byte(secretKey), nil
 	})
 	if err != nil {
-		// Unuathorized
-		return nil, NewJWTErr(err, "this token isn't valid")
+		return nil, NewJWTErr(err, "invalid or expired token")
+	}
+	if !token.Valid {
+		return nil, NewJWTErr(nil, "invalid token: final check failed")
 	}
 
 	claims, ok := token.Claims.(jwt.MapClaims)
-	if !ok || !token.Valid {
-		return nil, errors.New("invalid token")
+	if !ok {
+		return nil, NewJWTErr(nil, "invalid token: claims are not MapClaims")
 	}
 
 	return claims, nil
@@ -37,7 +40,7 @@ func VerifyToken(tokenValue string, secretKey string) (jwt.MapClaims, error) {
 func RemoveBearerPrefix(authHeader string) (string, error) {
 	parts := strings.Split(authHeader, " ")
 	if len(parts) != 2 || parts[0] != "Bearer" {
-		return "", NewJWTErr(nil, "failed to split bearer from auth header")
+		return "", NewJWTErr(nil, "invalid authorization type: failed to split bearer from auth header")
 	}
 	tokenString := parts[1]
 	return tokenString, nil
@@ -55,12 +58,12 @@ func JWTMiddleware(secretKey string) echo.MiddlewareFunc {
 
 			claims, err := VerifyToken(token, secretKey)
 			if err != nil {
-				return echo.NewHTTPError(http.StatusUnauthorized, "Token inválido")
+				return echo.NewHTTPError(http.StatusUnauthorized, "first verify: invalid token")
 			}
 
 			user, ok := claims["username"].(string)
 			if !ok {
-				return echo.NewHTTPError(http.StatusUnauthorized, "Token inválido")
+				return echo.NewHTTPError(http.StatusUnauthorized, "final verify: invalid token")
 			}
 
 			c.Set("user", user)

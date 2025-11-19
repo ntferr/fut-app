@@ -16,7 +16,6 @@ type AuthRequest struct {
 }
 
 type AuthClaims struct {
-	UserID   int    `json:"user_id"`
 	Username string `json:"username"`
 	jwt.RegisteredClaims
 }
@@ -34,13 +33,11 @@ func (a *AuthRequest) Validate() error {
 func (a *AuthRequest) GenerateToken(secretKey string) (string, error) {
 	now := time.Now()
 	claims := AuthClaims{
-		UserID:   a.ID,
 		Username: a.User,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(now.Add(time.Hour * 1)),
 			IssuedAt:  jwt.NewNumericDate(now),
 			Subject:   a.User,
-			ID:        string(rune(a.ID)), // Convertendo ID para string
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

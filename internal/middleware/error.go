@@ -1,17 +1,17 @@
 package middleware
 
 type JWTErr struct {
-	inner       error
-	description string
+	Inner error
+	Msg   string
 }
 
-func NewJWTErr(inner error, description string) JWTErr {
+func NewJWTErr(inner error, msg string) JWTErr {
 	return JWTErr{
-		inner:       inner,
-		description: description,
+		Inner: inner,
+		Msg:   msg,
 	}
 }
 
 func (j JWTErr) Error() string {
-	return j.description
+	return j.Msg
 }

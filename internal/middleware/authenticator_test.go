@@ -73,7 +73,6 @@ func TestVerifyToken(t *testing.T) {
 	is := require.New(t)
 
 	aReq := model.AuthRequest{
-		ID:       2,
 		User:     "test",
 		Password: "abcd",
 	}

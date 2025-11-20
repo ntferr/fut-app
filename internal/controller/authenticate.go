@@ -41,7 +41,18 @@ func (a Auth) Authenticate(c echo.Context) error {
 		)
 	}
 
-	storedAuth, err := a.Service.FindCredentials(c.Request().Context(), req)
+	credential, err := req.ParseAuthRequestToCredential()
+	if err != nil {
+		log.Println("failed to parse auth request to credential\n", err)
+		return c.JSON(
+			http.StatusInternalServerError,
+			map[string]string{
+				"error": "failed to create credential",
+			},
+		)
+	}
+
+	storedCredential, err := a.Service.FindCredentials(c.Request().Context(), credential)
 	if err != nil {
 		log.Println("failed to find credentials\n", err)
 		return c.JSON(
@@ -50,7 +61,7 @@ func (a Auth) Authenticate(c echo.Context) error {
 		)
 	}
 
-	token, err := storedAuth.GenerateToken(a.SecretKey)
+	token, err := storedCredential.GenerateToken(a.SecretKey)
 	if err != nil {
 		log.Println("failed to generate token\n", err)
 		c.JSON(
@@ -86,10 +97,21 @@ func (a Auth) CreateCredentials(c echo.Context) error {
 		)
 	}
 
-	req.CreatedAt = time.Now()
-	req.UpdatedAt = time.Now()
+	credential, err := req.ParseAuthRequestToCredential()
+	if err != nil {
+		log.Println("failed to parse auth request to credential\n", err)
+		return c.JSON(
+			http.StatusInternalServerError,
+			map[string]string{
+				"error": "failed to create credential",
+			},
+		)
+	}
 
-	if err := a.Service.CreateCredentials(c.Request().Context(), req); err != nil {
+	credential.CreatedAt = time.Now()
+	credential.UpdatedAt = time.Now()
+
+	if err := a.Service.CreateCredentials(c.Request().Context(), credential); err != nil {
 		return c.JSON(
 			http.StatusInternalServerError,
 			map[string]string{

@@ -25,29 +25,25 @@ func NewDatabase(gorm *gorm.DB) CredentialsDatabase {
 }
 
 type CredentialsRepository interface {
-	FindCredentials(ctx context.Context, credentials model.AuthRequest) (*model.AuthRequest, error)
-	CreateCredentials(ctx context.Context, credentials model.AuthRequest) error
+	FindCredentials(ctx context.Context, credentials *model.Credential) (*model.Credential, error)
+	CreateCredentials(ctx context.Context, credentials *model.Credential) error
 }
 
-func (d *CredentialsDatabase) FindCredentials(ctx context.Context, credentials model.AuthRequest) (*model.AuthRequest, error) {
-	var storedCredentias model.AuthRequest
+func (d *CredentialsDatabase) FindCredentials(ctx context.Context, credential *model.Credential) (*model.Credential, error) {
+	var storedCredential model.Credential
 	result := d.Gorm.
 		WithContext(ctx).
-		Where("user", credentials.User).
-		First(&storedCredentias)
+		Where("user", credential.User).
+		First(&storedCredential)
 	if result.Error != nil {
 		return nil, ErrUserNotFound
 	}
 
-	if !storedCredentias.CheckPassword(credentials.Password) {
-		return nil, ErrInvalidPassword
-	}
-
-	return &storedCredentias, nil
+	return &storedCredential, nil
 }
 
-func (d *CredentialsDatabase) CreateCredentials(ctx context.Context, credentials model.AuthRequest) error {
-	err := d.Gorm.Create(&credentials).Error
+func (d *CredentialsDatabase) CreateCredentials(ctx context.Context, credential *model.Credential) error {
+	err := d.Gorm.Create(&credential).Error
 	if err != nil {
 		return ErrCreationFailed
 	}

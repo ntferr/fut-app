@@ -5,14 +5,12 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type AuthRequest struct {
-	ID        int       `json:"id" gorm:"primaryKey"`
-	User      string    `json:"user" gorm:"user"`
-	Password  string    `json:"password" gorm:"password"`
-	CreatedAt time.Time `gorm:"createdAt"`
-	UpdatedAt time.Time `gorm:"updatedAt"`
+	User     string `json:"user"`
+	Password string `json:"password"`
 }
 
 type AuthClaims struct {
@@ -30,7 +28,29 @@ func (a *AuthRequest) Validate() error {
 	return nil
 }
 
-func (a *AuthRequest) GenerateToken(secretKey string) (string, error) {
+func (a *AuthRequest) ParseAuthRequestToCredential() (*Credential, error) {
+	encryptedPassword, err := bcrypt.GenerateFromPassword([]byte(a.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, err
+	}
+
+	credential := Credential{
+		User:              a.User,
+		EncryptedPassword: string(encryptedPassword),
+	}
+
+	return &credential, nil
+}
+
+type Credential struct {
+	ID                int       `gorm:"primaryKey"`
+	User              string    `gorm:"user"`
+	EncryptedPassword string    `gorm:"encryptedPassword"`
+	CreatedAt         time.Time `gorm:"createdAt"`
+	UpdatedAt         time.Time `gorm:"updatedAt"`
+}
+
+func (a *Credential) GenerateToken(secretKey string) (string, error) {
 	now := time.Now()
 	claims := AuthClaims{
 		Username: a.User,
@@ -48,11 +68,7 @@ func (a *AuthRequest) GenerateToken(secretKey string) (string, error) {
 	return tokenSttring, nil
 }
 
-func (a *AuthRequest) CheckPassword(password string) bool {
-	return a.Password == password
-}
-
-type CustomClaims struct {
-	AuthRequest
-	jwt.RegisteredClaims
+func (c *Credential) CheckPassword(password string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(c.EncryptedPassword), []byte(password))
+	return err == nil
 }

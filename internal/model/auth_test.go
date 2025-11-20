@@ -5,12 +5,11 @@ package model
 import (
 	"errors"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/require"
 )
 
-func TestAuth(t *testing.T) {
+func TestAuthRequest(t *testing.T) {
 	t.Parallel()
 	is := require.New(t)
 	tests := []struct {
@@ -22,19 +21,15 @@ func TestAuth(t *testing.T) {
 		{
 			name: "given validate correct AuthRequest, should be not error",
 			model: AuthRequest{
-				User:      "admin",
-				Password:  "test123",
-				CreatedAt: time.Now(),
-				UpdatedAt: time.Now(),
+				User:     "admin",
+				Password: "test123",
 			},
 			hasErr: false,
 		},
 		{
 			name: "given an authRequest without user, should return an error",
 			model: AuthRequest{
-				Password:  "test123",
-				CreatedAt: time.Now(),
-				UpdatedAt: time.Now(),
+				Password: "test123",
 			},
 			hasErr:      true,
 			expectedErr: errors.New("user is required"),
@@ -42,9 +37,7 @@ func TestAuth(t *testing.T) {
 		{
 			name: "given an authRequest without passowrd, should return an error",
 			model: AuthRequest{
-				User:      "admin",
-				CreatedAt: time.Now(),
-				UpdatedAt: time.Now(),
+				User: "admin",
 			},
 		},
 	}

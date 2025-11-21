@@ -7,9 +7,23 @@ import (
 )
 
 func Setup(app *echo.Echo, control *controller.Controller, secretKey string) {
-	app.POST("auth/login", control.Auth.Authenticate)
-	app.POST("auth/create", control.Auth.CreateCredentials)
+	authEndpoints(
+		app.Group("/auth"),
+		&control.Auth,
+		secretKey,
+	)
+	championshipEndpoints(
+		app.Group("/campeonatos", middleware.JWTMiddleware(secretKey)),
+		&control.Champion,
+	)
+}
 
-	protected := app.Group("/campeonatos", middleware.JWTMiddleware(secretKey))
-	protected.GET("/", control.Champion.Championship)
+func authEndpoints(auth *echo.Group, control *controller.Auth, secretKey string) {
+	auth.POST("/login", control.Authenticate)
+	auth.POST("/create", control.CreateCredentials, middleware.JWTMiddleware(secretKey))
+}
+
+func championshipEndpoints(champion *echo.Group, control *controller.Champion) {
+	champion.GET("/", control.Championship)
+	// TODO: endpoint for filters
 }
